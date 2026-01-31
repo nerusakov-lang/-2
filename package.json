@@ -1,0 +1,36 @@
+{
+  "name": "child-health-roadmap",
+  "version": "1.0.0",
+  "description": "Interactive web app for tracking baby health & development 0-6 months. PWA, offline-first, all data stored locally.",
+  "main": "index.html",
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/child-health-roadmap.git"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/child-health-roadmap#readme",
+  "keywords": [
+    "baby",
+    "health",
+    "development",
+    "roadmap",
+    "tracking",
+    "pwa",
+    "offline",
+    "wellness",
+    "parenting",
+    "web-app",
+    "progressive-web-app"
+  ],
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/child-health-roadmap/issues"
+  },
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "open": "start http://localhost:8000"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

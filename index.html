@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Дорожная карта здоровья ребёнка 0-6 месяцев</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Здоровье ребёнка">
+    <meta name="theme-color" content="#6b9b7e">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%236b9b7e;stop-opacity:1' /><stop offset='100%' style='stop-color:%23355a40;stop-opacity:1' /></linearGradient></defs><rect width='180' height='180' fill='url(%23grad)'/><text x='90' y='110' font-size='90' text-anchor='middle' fill='white' font-family='Arial'>💩</text></svg>">
+    <link rel="manifest" href="data:application/json,{%22name%22:%22Дорожная карта здоровья ребёнка%22,%22short_name%22:%22Здоровье ребёнка%22,%22start_url%22:%22./%22,%22display%22:%22standalone%22,%22background_color%22:%22%23ffffff%22,%22theme_color%22:%236b9b7e%22,%22orientation%22:%22portrait%22}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; }
+        
+        .header-gradient { background: linear-gradient(135deg, #6b9b7e 0%, #355a40 100%); }
+        .tab-active { background: linear-gradient(135deg, #6b9b7e 0%, #355a40 100%); color: white; }
+        .progress-bar { transition: width 0.525s ease-in-out; }
+        .nav-active { color: #355a40; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        input[type="checkbox"] { accent-color: #355a40; width: 24px !important; height: 24px !important; border-radius: 50% !important; cursor: pointer; transition: none !important; animation: none !important; }
+        input[type="date"], input[type="text"] { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; }
+        
+        label { transition: none !important; animation: none !important; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+        label:active { opacity: 1 !important; transform: none !important; background-color: transparent !important; }
+        label:hover { background-color: rgba(0, 0, 0, 0.02) !important; }
+        
+        input[type="date"], input[type="text"] { -webkit-appearance: none; appearance: none; }
+        button, label { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        button:active { opacity: 1 !important; transform: none !important; }
+        
+        .item-text { font-size: 1.08em; }
+        .item-note { font-size: 0.95em; }
+        
+        .gear-icon { transition: transform 0.3s ease-in-out; display: inline-block; }
+        .gear-rotating { animation: spin 0.5s ease-in-out forwards; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(90deg); } }
+        
+        .baby-container { display: inline-block; margin: 0 10px; font-size: 2em; }
+        .baby { animation: baby-appear 0.6s ease-out; display: inline-block; }
+        @keyframes baby-appear { from { transform: scale(0) rotate(-45deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 1; } }
+        
+        .category-physical { border-left: 4px solid #10b981; }
+        .category-motor { border-left: 4px solid #3b82f6; }
+        .category-emotional { border-left: 4px solid #f59e0b; }
+        .category-nutrition { border-left: 4px solid #ec4899; }
+        .category-sleep { border-left: 4px solid #8b5cf6; }
+        .category-doctors { border-left: 4px solid #ef4444; }
+        .category-tests { border-left: 4px solid #06b6d4; }
+        .category-vaccines { border-left: 4px solid #84cc16; }
+        .category-recommendations { border-left: 4px solid #f97316; }
+        
+        .progress-month { background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%); }
+        .progress-overall { background: white; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app" class="max-w-lg mx-auto pb-20">
+        <header class="header-gradient text-white p-4 sticky top-0 z-50 shadow-lg">
+            <div class="flex justify-between items-center mb-3">
+                <div class="flex-1 text-center">
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="baby-container">
+                            <span class="baby" id="babyEmoji">👶</span>
+                        </div>
+                        <div>
+                            <h1 class="text-lg font-bold">Дорожная карта здоровья</h1>
+                            <p class="text-xs opacity-90">0–6 месяцев</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleSettings()" class="p-2 hover:bg-white/20 rounded-lg flex-shrink-0 ml-2" title="Настройки">
+                    <svg class="gear-icon w-5 h-5" id="gearIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+            </div>
+
+            <div class="bg-white/20 rounded-lg p-2.5">
+                <label class="text-xs opacity-90 block mb-1.5">Дата рождения:</label>
+                <input type="date" id="birthDate" class="w-full p-1.5 rounded text-gray-800 text-sm" onchange="updateBirthDate()">
+                <p id="currentAge" class="text-xs mt-1.5 opacity-90"></p>
+            </div>
+
+            <div class="mt-4">
+                <div class="flex justify-between text-xs mb-1"><span>📊 Общий прогресс</span><span id="progressPercent">0%</span></div>
+                <div class="h-2.5 bg-white/30 rounded-full overflow-hidden"><div id="progressBar" class="h-full progress-overall progress-bar rounded-full" style="width:0%"></div></div>
+            </div>
+
+            <div class="mt-3">
+                <div class="flex justify-between text-xs mb-1"><span>🎯 Прогресс месяца</span><span id="monthProgressPercent">0%</span></div>
+                <div class="h-2.5 bg-white/30 rounded-full overflow-hidden"><div id="monthProgressBar" class="h-full progress-month progress-bar rounded-full" style="width:0%"></div></div>
+            </div>
+        </header>
+
+        <div class="sticky z-40 bg-gray-50 p-2 shadow-sm" style="top:160px;">
+            <div class="flex overflow-x-auto gap-1 pb-1 hide-scrollbar" id="monthTabs"></div>
+        </div>
+
+        <main class="p-4" id="content"></main>
+
+        <div id="settingsModal" class="fixed inset-0 bg-black/50 z-[100] hidden items-center justify-center p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl max-h-[80vh] overflow-y-auto">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">⚙️ Настройки</h3>
+                <div class="space-y-3">
+                    <button onclick="exportAsJSON()" class="w-full p-3 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100">📋 Экспортировать JSON</button>
+                    <button onclick="importFromJSON()" class="w-full p-3 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-100">📂 Импортировать JSON</button>
+                    <button onclick="exportAsReport()" class="w-full p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100">📄 Скачать отчет</button>
+                    <button onclick="shareReport()" class="w-full p-3 bg-purple-50 text-purple-600 rounded-lg text-sm font-medium hover:bg-purple-100">📤 Поделиться отчетом</button>
+                    <button onclick="exportAsICS()" class="w-full p-3 bg-green-50 text-green-600 rounded-lg text-sm font-medium hover:bg-green-100">📅 iCalendar</button>
+                    <hr class="my-3">
+                    <button onclick="resetProgress()" class="w-full p-3 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100">🗑 Сбросить прогресс</button>
+                    <button onclick="resetBirthDate()" class="w-full p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100">📅 Очистить дату</button>
+                </div>
+                <button onclick="hideSettings()" class="w-full mt-4 p-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">Закрыть</button>
+            </div>
+        </div>
+
+        <input type="file" id="fileInput" accept=".json" style="display:none;" onchange="handleFileImport()">
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
+            <div class="max-w-lg mx-auto flex justify-around p-2">
+                <button id="nav-calendar" onclick="showView('calendar')" class="flex flex-col items-center p-2 text-gray-600 hover:text-green-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-xs">Этапы</span></button>
+                <button id="nav-vaccines" onclick="showView('vaccines')" class="flex flex-col items-center p-2 text-gray-600 hover:text-green-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg><span class="text-xs">Прививки</span></button>
+                <button id="nav-doctors" onclick="showView('doctors')" class="flex flex-col items-center p-2 text-gray-600 hover:text-green-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="text-xs">Врачи</span></button>
+                <button id="nav-checklist" onclick="showView('checklist')" class="flex flex-col items-center p-2 text-gray-600 hover:text-green-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg><span class="text-xs">Список</span></button>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+const healthData={1:{title:"1-й месяц",subtitle:"Адаптация и скрининг",categories:{physical:{icon:"📊",title:"Физическое развитие",items:[{id:"1-p1",text:"Прибавка массы тела: 800–1200 г",note:"От минимального веса после физиологической убыли"},{id:"1-p2",text:"Прибавка длины тела: 3,5–4,0 см"},{id:"1-p3",text:"Окружность головы: +1,5 см"}]},motor:{icon:"🧒",title:"Моторное развитие",items:[{id:"1-m1",text:"Поза «эмбриона»: физиологический гипертонус",note:"Ручки согнуты, кулачки сжаты, ножки согнуты"},{id:"1-m2",text:"Хаотичные движения конечностей"},{id:"1-m3",text:"На животе пытается приподнять голову на 1-2 сек"},{id:"1-m4",text:"Все безусловные рефлексы выражены",note:"Поисковый, сосательный, хватательный, Моро"}]},emotional:{icon:"💭",title:"Эмоциональное развитие",items:[{id:"1-e1",text:"Фиксирует взгляд на 5-10 секунд",note:"На контрастном предмете или лице на 20-40 см"},{id:"1-e2",text:"Замирает или вздрагивает при резком звуке"},{id:"1-e3",text:"Первая эндогенная улыбка во сне"},{id:"1-e4",text:"Узнаёт мать по запаху, голосу"}]},nutrition:{icon:"🍼",title:"Питание",items:[{id:"1-n1",text:"Только грудное молоко или смесь"},{id:"1-n2",text:"Суточный объём: 600-800 мл"}]},sleep:{icon:"💤",title:"Сон",items:[{id:"1-s1",text:"16-20 часов в сутки",note:"Полифазный, циклы по 50-90 минут"}]},doctors:{icon:"🏥",title:"Врачи",items:[{id:"1-d1",text:"Педиатр (диспансерный осмотр)"},{id:"1-d2",text:"Невролог"},{id:"1-d3",text:"Детский хирург/ортопед"},{id:"1-d4",text:"Офтальмолог"},{id:"1-d5",text:"Детский стоматолог"}]},tests:{icon:"🩺",title:"Обследования",items:[{id:"1-t1",text:"Нейросонография (НСГ)"},{id:"1-t2",text:"УЗИ тазобедренных суставов"},{id:"1-t3",text:"УЗИ органов брюшной полости и почек"},{id:"1-t4",text:"Эхокардиография (УЗИ сердца)"},{id:"1-t5",text:"Общий анализ крови (ОАК)"},{id:"1-t6",text:"Общий анализ мочи (ОАМ)"},{id:"1-t7",text:"Аудиологический скрининг"}]},vaccines:{icon:"💉",title:"Прив",items:[{id:"1-v1",text:"Вирусный гепатит B (2-я доза)"}]},recommendations:{icon:"💡",title:"Рекомендации",items:[{id:"1-r1",text:"Витамин D3: 1000 МЕ/сут с 4-й недели"},{id:"1-r2",text:"Безопасный сон: на спине, жёсткий матрас"},{id:"1-r3",text:"Выкладывание на живот: 2-3 мин"}]}}},2:{title:"2-й месяц",subtitle:"Первые осознанные улыбки",categories:{physical:{icon:"📊",title:"Физическое развитие",items:[{id:"2-p1",text:"Прибавка массы тела: 700-900 г"},{id:"2-p2",text:"Прибавка длины тела: ~3 см"},{id:"2-p3",text:"Окружность головы: +1,5 см"}]},motor:{icon:"🧒",title:"Моторное развитие",items:[{id:"2-m1",text:"На животе удерживает голову под углом 45°",note:"10-20 секунд"},{id:"2-m2",text:"Мышечный тонус уравновешивается"},{id:"2-m3",text:"Рефлекс Моро начинает угасать"},{id:"2-m4",text:"Первые попытки направить руку к предмету"}]},emotional:{icon:"💭",title:"Эмоциональное развитие",items:[{id:"2-e1",text:"⭐ СОЦИАЛЬНАЯ УЛЫБКА — ключевая веха!",note:"Осознанная улыбка в ответ на взрослого"},{id:"2-e2",text:"«Комплекс оживления»",note:"Улыбается, двигает ручками/ножками"},{id:"2-e3",text:"Следит за движущимся лицом 10-15 сек"},{id:"2-e4",text:"Начинает гуление",note:"Произносит «а», «у», «о»"}]},nutrition:{icon:"🍼",title:"Питание",items:[{id:"2-n1",text:"Только грудное молоко или смесь"},{id:"2-n2",text:"Суточный объём: 700-850 мл"}]},sleep:{icon:"💤",title:"Сон",items:[{id:"2-s1",text:"15-17 часов в сутки",note:"Ночной промежуток 4-5 часов"}]},doctors:{icon:"🏥",title:"Врачи",items:[{id:"2-d1",text:"Педиатр (ежемесячный осмотр)"}]},tests:{icon:"🩺",title:"Обследования",items:[{id:"2-t1",text:"По показаниям"}]},vaccines:{icon:"💉",title:"Прив",items:[{id:"2-v1",text:"Пневмококковая инфекция (1-я доза)"},{id:"2-v2",text:"Ротавирусная инфекция (1-я доза)"}]},recommendations:{icon:"💡",title:"Рекомендации",items:[{id:"2-r1",text:"Витамин D3: продолжать 1000 МЕ/сут"},{id:"2-r2",text:"Выкладывание на живот: 10-15 мин"},{id:"2-r3",text:"Стимулировать комплекс оживления"},{id:"2-r4",text:"Показывать контрастные игрушки"},{id:"2-r5",text:"Формировать режим дня"}]}}},3:{title:"3-й месяц",subtitle:"Активное гуление и повороты",categories:{physical:{icon:"📊",title:"Физическое развитие",items:[{id:"3-p1",text:"Прибавка массы тела: 600-800 г"},{id:"3-p2",text:"Прибавка длины тела: 2,5-3 см"},{id:"3-p3",text:"Окружность головы: +1,5-2 см"}]},motor:{icon:"🧒",title:"Моторное развитие",items:[{id:"3-m1",text:"Опирается на предплечья, поднимает голову",note:"До 1-2 минут, поворот на 180°"},{id:"3-m2",text:"Рассматривает свои руки"},{id:"3-m3",text:"Исчезает рефлекс Моро"},{id:"3-m4",text:"Начинает поворачиваться со спины на бок"},{id:"3-m5",text:"Захватывает игрушки ладонью"}]},emotional:{icon:"💭",title:"Эмоциональное развитие",items:[{id:"3-e1",text:"Активный комплекс оживления",note:"Громко смеётся"},{id:"3-e2",text:"Певучее гуление",note:"Тянет «а-а-а», «агу»"},{id:"3-e3",text:"Рассматривает предметы 3-5 минут"},{id:"3-e4",text:"Узнаёт близких визуально"},{id:"3-e5",text:"Различает интонации"}]},nutrition:{icon:"🍼",title:"Питание",items:[{id:"3-n1",text:"Только грудное молоко или смесь"},{id:"3-n2",text:"Суточный объём: 750-900 мл"}]},sleep:{icon:"💤",title:"Сон",items:[{id:"3-s1",text:"14-16 часов в сутки",note:"Ночной сон 5-6 часов"}]},doctors:{icon:"🏥",title:"Врачи",items:[{id:"3-d1",text:"Педиатр (ежемесячный осмотр)"},{id:"3-d2",text:"Невролог (плановый осмотр)"}]},tests:{icon:"🩺",title:"Обследования",items:[{id:"3-t1",text:"Общий анализ крови (ОАК)"},{id:"3-t2",text:"Общий анализ мочи (ОАМ)"}]},vaccines:{icon:"💉",title:"Прив",items:[{id:"3-v1",text:"АКДС (1-я доза)",note:"Дифтерия, коклюш, столбняк"},{id:"3-v2",text:"Полиомиелит ИПВ (1-я доза)"},{id:"3-v3",text:"Гемофильная инфекция Hib (1-я доза)"},{id:"3-v4",text:"Ротавирусная инфекция (2-я доза)"}]},recommendations:{icon:"💡",title:"Рекомендации",items:[{id:"3-r1",text:"Продолжать витамин D3"},{id:"3-r2",text:"Стимулировать повороты игрушкой"},{id:"3-r3",text:"Игрушки разной фактуры"},{id:"3-r4",text:"Погремушки-кольца для хватания"},{id:"3-r5",text:"Много общаться"}]}}},4:{title:"4-й месяц",subtitle:"Освоение переворотов",categories:{physical:{icon:"📊",title:"Физическое развитие",items:[{id:"4-p1",text:"Прибавка массы тела: 600-700 г"},{id:"4-p2",text:"Прибавка длины тела: ~2,5 см"},{id:"4-p3",text:"Окружность головы: +1 см"}]},motor:{icon:"🧒",title:"Моторное развитие",items:[{id:"4-m1",text:"⭐ ПЕРЕВОРОТ СО СПИНЫ НА ЖИВОТ!"},{id:"4-m2",text:"Опирается на раскрытые ладони"},{id:"4-m3",text:"Подтягивается за руки, пытается сесть"},{id:"4-m4",text:"Исчезает гипертонус в руках"},{id:"4-m5",text:"Перекладывает игрушки из руки в руку"}]},emotional:{icon:"💭",title:"Эмоциональное развитие",items:[{id:"4-e1",text:"Активный разнообразный лепет",note:"«ба-ба», «ма-ма» без смысла"},{id:"4-e2",text:"Громко смеётся"},{id:"4-e3",text:"Различает основные цвета"},{id:"4-e4",text:"Улыбается отражению в зеркале"},{id:"4-e5",text:"Настороженно реагирует на чужих"}]},nutrition:{icon:"🍼",title:"Питание",items:[{id:"4-n1",text:"Основа: грудное молоко или смесь"},{id:"4-n2",text:"Суточный объём: 800-950 мл"},{id:"4-n3",text:"Можно микродозы при интересе"}]},sleep:{icon:"💤",title:"Сон",items:[{id:"4-s1",text:"14-16 часов в сутки",note:"Возможен регресс сна"}]},doctors:{icon:"🏥",title:"Врачи",items:[{id:"4-d1",text:"Педиатр (ежемесячный осмотр)"}]},tests:{icon:"🩺",title:"Обследования",items:[{id:"4-t1",text:"По показаниям"}]},vaccines:{icon:"💉",title:"Прив",items:[{id:"4-v1",text:"Плановых прививок нет"}]},recommendations:{icon:"💡",title:"Рекомендации",items:[{id:"4-r1",text:"⚠️ БЕЗОПАСНОСТЬ! Не оставлять на высоте!"},{id:"4-r2",text:"Играть в «ку-ку»"},{id:"4-r3",text:"Игрушки-прорезыватели"},{id:"4-r4",text:"Менять положение игрушек"}]}}},5:{title:"5-й месяц",subtitle:"Подготовка к ползанию",categories:{physical:{icon:"📊",title:"Физическое развитие",items:[{id:"5-p1",text:"Прибавка массы: 550-650 г",note:"Вес обычно удваивается от рождения"},{id:"5-p2",text:"Прибавка длины: ~2 см"},{id:"5-p3",text:"Окружность головы: +1 см"}]},motor:{icon:"🧒",title:"Моторное развитие",items:[{id:"5-m1",text:"Уверенные перевороты в обе стороны"},{id:"5-m2",text:"Пытается сесть при подтягивании"},{id:"5-m3",text:"Раскачивается на животе"},{id:"5-m4",text:"Некоторые ползают по-пластунски"},{id:"5-m5",text:"Хватает предметы одной рукой"}]},emotional:{icon:"💭",title:"Эмоциональное развитие",items:[{id:"5-e1",text:"Активный лепет со слогами",note:"«ба-ба-ба», «да-да-да»"},{id:"5-e2",text:"Различает «своих» и «чужих»"},{id:"5-e3",text:"Тянет руки на руки"},{id:"5-e4",text:"Понимает причинно-следственные связи"},{id:"5-e5",text:"Любит играть в «ку-ку»"}]},nutrition:{icon:"🍼",title:"Питание",items:[{id:"5-n1",text:"Основа: грудное молоко или смесь"},{id:"5-n2",text:"Суточный объём: 850-1000 мл"},{id:"5-n3",text:"Можно начать прикорм при интересе"}]},sleep:{icon:"💤",title:"Сон",items:[{id:"5-s1",text:"13-15 часов в сутки",note:"Ночной сон 6-8 часов"}]},doctors:{icon:"🏥",title:"Врачи",items:[{id:"5-d1",text:"Педиатр (ежемесячный осмотр)"}]},tests:{icon:"🩺",title:"Обследования",items:[{id:"5-t1",text:"По показаниям"}]},vaccines:{icon:"💉",title:"Прив",items:[{id:"5-v1",text:"АКДС (2-я доза)"},{id:"5-v2",text:"Полиомиелит ИПВ (2-я доза)"},{id:"5-v3",text:"Гемофильная Hib (2-я доза)"},{id:"5-v4",text:"Ротавирусная (3-я доза)"},{id:"5-v5",text:"Пневмококковая (2-я доза)"}]},recommendations:{icon:"💡",title:"Рекомендации",items:[{id:"5-r1",text:"⚠️ Безопасное пространство на полу"},{id:"5-r2",text:"Подготовка к прикорму"},{id:"5-r3",text:"Стимуляция ползания"},{id:"5-r4",text:"Книги с простыми картинками"},{id:"5-r5",text:"Игры: «Ладушки», «Сорока-ворона»"}]}}},6:{title:"6-й месяц",subtitle:"Старт прикорма и сидение",categories:{physical:{icon:"📊",title:"Физическое развитие",items:[{id:"6-p1",text:"Прибавка массы: 500-600 г",note:"Всего 6500-9000 г"},{id:"6-p2",text:"Длина: +2 см (61-68 см)"},{id:"6-p3",text:"Окружность головы: +1 см (41-44 см)"}]},motor:{icon:"🧒",title:"Моторное развитие",items:[{id:"6-m1",text:"⭐ СИДИТ САМОСТОЯТЕЛЬНО!",note:"С опорой на руки вперёд"},{id:"6-m2",text:"Активно ползает"},{id:"6-m3",text:"Поднимается на выпрямленных руках"},{id:"6-m4",text:"Перекладывает, бросает игрушки"},{id:"6-m5",text:"Начинает щипковый захват"}]},emotional:{icon:"💭",title:"Эмоциональное развитие",items:[{id:"6-e1",text:"Активный слоговой лепет"},{id:"6-e2",text:"Понимает «мама», «папа», своё имя"},{id:"6-e3",text:"Реагирует на своё имя"},{id:"6-e4",text:"Страх сепарации",note:"Может плакать при уходе мамы"},{id:"6-e5",text:"Понимает постоянство объекта"}]},nutrition:{icon:"🍼",title:"Питание",items:[{id:"6-n1",text:"⭐ НАЧАЛО ПРИКОРМА!",note:"При активном пищевом интересе"},{id:"6-n2",text:"Основа: грудное молоко или смесь"},{id:"6-n3",text:"Суточный объём: 800-950 мл"}]},sleep:{icon:"💤",title:"Сон",items:[{id:"6-s1",text:"13-15 часов в сутки",note:"2 дневных сна по 1,5-2 часа"}]},doctors:{icon:"🏥",title:"Врачи",items:[{id:"6-d1",text:"Педиатр (плановый осмотр)"},{id:"6-d2",text:"Невролог (плановый осмотр)"},{id:"6-d3",text:"Хирург/ортопед (плановый)"}]},tests:{icon:"🩺",title:"Обследования",items:[{id:"6-t1",text:"Общий анализ крови (ОАК)"},{id:"6-t2",text:"Общий анализ мочи (ОАМ)"}]},vaccines:{icon:"💉",title:"Прив",items:[{id:"6-v1",text:"АКДС (3-я доза)"},{id:"6-v2",text:"Полиомиелит ИПВ (3-я доза)"},{id:"6-v3",text:"Гемофильная Hib (3-я доза)"},{id:"6-v4",text:"Гепатит В (3-я доза)"}]},recommendations:{icon:"💡",title:"Рекомендации",items:[{id:"6-r1",text:"⚠️ БЕЗОПАСНОСТЬ для ползунка!",note:"Заглушки, блокираторы, защита углов"},{id:"6-r2",text:"Убрать мелкие предметы"},{id:"6-r3",text:"«Полоса препятствий» из подушек"},{id:"6-r4",text:"Игрушки: кубики, стаканчики, мячики"},{id:"6-r5",text:"Прорезывание: возможны нижние резцы"}]}}}};
+
+const babyGrowth=['👶','🧒','🚼','😊','🤗','👨‍👩‍👧'];
+let currentMonth=1,currentView='calendar',completedItems={},birthDate='',gearSpinning=false;
+
+function safeGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function safeSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+function init(){
+    const s=safeGet('completedItems');
+    if(s)try{completedItems=JSON.parse(s)}catch(e){}
+    birthDate=safeGet('birthDate')||'';
+    if(birthDate){document.getElementById('birthDate').value=birthDate; updateBirthDate();}
+    renderMonthTabs();
+    renderContent();
+    updateProgress();
+    updateNav();
+    updateBaby();
+}
+
+function updateBaby(){
+    const babyEl=document.getElementById('babyEmoji');
+    const emoji=babyGrowth[currentMonth-1]||'👶';
+    babyEl.textContent=emoji;
+    const sizes=['1.5em','1.7em','1.9em','2.1em','2.3em','2.5em'];
+    babyEl.style.fontSize=sizes[currentMonth-1]||'2.5em';
+}
+
+function toggleSettings(){
+    if(!gearSpinning){
+        const gear=document.getElementById('gearIcon');
+        gear.classList.add('gear-rotating');
+        gearSpinning=true;
+        setTimeout(()=>{
+            showSettings();
+            gear.classList.remove('gear-rotating');
+            gearSpinning=false;
+        },500);
+    }
+}
+
+function updateBirthDate(){
+    const input=document.getElementById('birthDate').value;
+    if(input){
+        birthDate=input;
+        safeSet('birthDate',birthDate);
+        const birth=new Date(birthDate),today=new Date(),diffDays=Math.floor((today-birth)/(1000*60*60*24)),months=Math.floor(diffDays/30.44),days=Math.floor(diffDays%30.44);
+        document.getElementById('currentAge').textContent=diffDays>=0?`Возраст: ${months}м ${days}д`:`До: ${Math.abs(diffDays)}д`;
+        if(months>=0&&months<=5)currentMonth=months+1;
+        else if(months>5)currentMonth=6;
+        updateBaby();
+        renderMonthTabs();
+        renderContent();
+    }else{
+        document.getElementById('currentAge').textContent='';
+    }
+}
+
+function renderMonthTabs(){
+    const c=document.getElementById('monthTabs');
+    c.innerHTML='';
+    for(let i=1;i<=6;i++){
+        const comp=countCompleted(i),total=countTotal(i),active=i===currentMonth,tab=document.createElement('button');
+        tab.className=`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all ${active?'tab-active shadow-md':'bg-white text-gray-600 hover:bg-gray-100 border'}`;
+        tab.innerHTML=`<div>${i}м</div><div class="text-xs ${active?'opacity-80':'text-gray-400'}">${comp}/${total}</div>`;
+        tab.onclick=()=>{currentMonth=i;currentView='calendar';updateBaby();renderMonthTabs();renderContent();updateNav();updateProgress()};
+        c.appendChild(tab);
+    }
+}
+
+function countCompleted(m){let c=0;for(const cat of Object.values(healthData[m].categories))for(const item of cat.items)if(completedItems[item.id])c++;return c;}
+
+function countTotal(m){let c=0;for(const cat of Object.values(healthData[m].categories))c+=cat.items.length;return c;}
+
+function renderContent(){
+    const c=document.getElementById('content'),d=healthData[currentMonth];
+    if(currentView==='calendar'){
+        let html=`<div><div class="text-center mb-4"><h2 class="text-xl font-bold text-gray-800">${d.title}</h2><p class="text-sm text-gray-500">${d.subtitle}</p></div>`;
+        for(const [k,cat] of Object.entries(d.categories))html+=renderCat(k,cat);
+        html+='</div>';
+        c.innerHTML=html;
+    }else if(currentView==='vaccines')renderVaccines(c);
+    else if(currentView==='doctors')renderDoctors(c);
+    else if(currentView==='checklist')renderChecklist(c);
+}
+
+function renderCat(key,cat){
+    return`<div class="bg-white rounded-xl shadow-sm mb-4 overflow-hidden category-${key}"><div class="p-3 bg-gray-50 border-b flex items-center gap-2"><span class="text-lg">${cat.icon}</span><h3 class="font-semibold text-gray-800">${cat.title}</h3></div><div class="p-3 space-y-1">${cat.items.map(i=>renderItem(i)).join('')}</div></div>`;
+}
+
+function renderItem(item){
+    const done=completedItems[item.id];
+    return`<label class="flex items-start gap-3 p-2 rounded-lg cursor-pointer ${done?'opacity-60':''}"><input type="checkbox" ${done?'checked':''} onchange="toggle('${item.id}')" class="mt-1 flex-shrink-0"><div class="flex-1"><div class="item-text ${done?'line-through text-gray-400':'text-gray-700'}">${item.text}</div>${item.note?`<div class="item-note text-gray-400 mt-1">${item.note}</div>`:''}</div></label>`;
+}
+
+function toggle(id){
+    completedItems[id]=!completedItems[id];
+    if(!completedItems[id])delete completedItems[id];
+    safeSet('completedItems',JSON.stringify(completedItems));
+    renderMonthTabs();
+    renderContent();
+    updateProgress();
+}
+
+function updateProgress(){
+    let t=0,c=0,mt=0,mc=0;
+    for(let m=1;m<=6;m++){
+        for(const cat of Object.values(healthData[m].categories)){
+            for(const item of cat.items){
+                t++;
+                if(m===currentMonth)mt++;
+                if(completedItems[item.id])c++;
+                if(m===currentMonth&&completedItems[item.id])mc++;
+            }
+        }
+    }
+    const pct=t>0?Math.round(c/t*100):0;
+    const mpct=mt>0?Math.round(mc/mt*100):0;
+    document.getElementById('progressPercent').textContent=`${pct}%`;
+    document.getElementById('monthProgressPercent').textContent=`${mpct}%`;
+    document.getElementById('progressBar').style.width=`${pct}%`;
+    document.getElementById('monthProgressBar').style.width=`${mpct}%`;
+}
+
+function updateNav(){
+    document.querySelectorAll('[id^="nav-"]').forEach(b=>b.classList.remove('nav-active'));
+    document.getElementById(`nav-${currentView}`)?.classList.add('nav-active');
+}
+
+function showView(v){currentView=v;renderContent();updateNav();}
+
+function renderVaccines(c){
+    let h=`<div><h2 class="text-xl font-bold text-gray-800 mb-4 text-center">💉 Прививки</h2>`;
+    for(let m=1;m<=6;m++){
+        const v=healthData[m].categories.vaccines;
+        if(v&&v.items.length>0)h+=`<div class="bg-white rounded-xl shadow-sm mb-4 overflow-hidden category-vaccines"><div class="p-3 bg-green-50 border-b"><h3 class="font-semibold text-gray-800">${m}м</h3></div><div class="p-3 space-y-1">${v.items.map(i=>renderItem(i)).join('')}</div></div>`;
+    }
+    c.innerHTML=h+'</div>';
+}
+
+function renderDoctors(c){
+    let h=`<div><h2 class="text-xl font-bold text-gray-800 mb-4 text-center">🏥 Врачи</h2>`;
+    for(let m=1;m<=6;m++){
+        const d=healthData[m].categories.doctors,t=healthData[m].categories.tests;
+        h+=`<div class="bg-white rounded-xl shadow-sm mb-4 overflow-hidden category-doctors"><div class="p-3 bg-red-50 border-b"><h3 class="font-semibold text-gray-800">${m}м</h3></div><div class="p-3"><div class="mb-3"><div class="text-xs font-medium text-gray-500 mb-2">ВРАЧИ:</div>${d.items.map(i=>renderItem(i)).join('')}</div><div class="pt-3 border-t"><div class="text-xs font-medium text-gray-500 mb-2">ТЕСТЫ:</div>${t.items.map(i=>renderItem(i)).join('')}</div></div></div>`;
+    }
+    c.innerHTML=h+'</div>';
+}
+
+function renderChecklist(c){
+    let h=`<div><h2 class="text-xl font-bold text-gray-800 mb-4 text-center">📋 Все дела</h2>`;
+    for(let m=1;m<=6;m++){
+        const d=healthData[m];
+        h+=`<div class="mb-4"><h3 class="font-bold text-gray-700 mb-2 text-lg">${d.title}</h3>`;
+        for(const [k,cat] of Object.entries(d.categories))h+=`<div class="bg-white rounded-lg shadow-sm mb-2 overflow-hidden category-${k}"><div class="p-2 bg-gray-50 border-b"><span class="text-sm font-medium text-gray-700">${cat.icon} ${cat.title}</span></div><div class="p-2 space-y-0.5">${cat.items.map(i=>renderItem(i)).join('')}</div></div>`;
+        h+='</div>';
+    }
+    c.innerHTML=h+'</div>';
+}
+
+function showSettings(){document.getElementById('settingsModal').classList.remove('hidden');document.getElementById('settingsModal').classList.add('flex');}
+
+function hideSettings(){document.getElementById('settingsModal').classList.add('hidden');document.getElementById('settingsModal').classList.remove('flex');}
+
+function exportAsJSON(){const data={birthDate,completedItems};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`health-${new Date().toISOString().split('T')[0]}.json`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+
+function importFromJSON(){document.getElementById('fileInput').click();}
+
+function handleFileImport(){const file=document.getElementById('fileInput').files[0];if(!file)return;const reader=new FileReader();reader.onload=function(e){try{const data=JSON.parse(e.target.result);if(data.birthDate)birthDate=data.birthDate;if(data.completedItems)completedItems=data.completedItems;safeSet('birthDate',birthDate);safeSet('completedItems',JSON.stringify(completedItems));if(birthDate)document.getElementById('birthDate').value=birthDate;renderMonthTabs();renderContent();updateProgress();}catch(err){}};reader.readAsText(file);document.getElementById('fileInput').value='';}
+
+function exportAsReport(){
+    let html=`<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{font-family:Arial,sans-serif}body{padding:20px;line-height:1.6;background:#f5f5f5}h1{color:#355a40;border-bottom:3px solid #6b9b7e;padding-bottom:10px}h2{color:#6b9b7e;margin-top:20px}h3{color:#355a40;font-size:1.1em}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}.stat-box{background:#fff;padding:15px;border-left:4px solid #6b9b7e;border-radius:5px}.stat-value{font-size:1.8em;font-weight:bold;color:#355a40}.stat-label{font-size:0.9em;color:#666}.chart{margin:20px 0;padding:15px;background:#fff;border-radius:5px}table{width:100%;border-collapse:collapse;margin:15px 0}td,th{padding:10px;border:1px solid #ddd;text-align:left}th{background:#f0f0f0;font-weight:bold}.progress{width:100%;height:20px;background:#f0f0f0;border-radius:10px;overflow:hidden;margin:10px 0}.progress-fill{height:100%;background:linear-gradient(90deg,#6b9b7e 0%,#355a40 100%);transition:width 0.3s}.checklist{background:#f9f9f9;padding:15px;border-radius:5px;margin:10px 0}.check{display:flex;gap:8px}.check:before{content:'✓';color:#6b9b7e;font-weight:bold}</style></head><body>`;
+    
+    html+=`<h1>📊 Дорожная карта здоровья ребёнка 💩</h1>`;
+    if(birthDate)html+=`<p><strong>Дата рождения:</strong> ${birthDate}</p>`;
+    const now=new Date();
+    html+=`<p><strong>Дата отчёта:</strong> ${now.toLocaleDateString('ru-RU')} ${now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</p>`;
+    
+    const pct=calculateProgress();
+    html+=`<div class="stats"><div class="stat-box"><div class="stat-value">${pct}%</div><div class="stat-label">Общий прогресс</div></div><div class="stat-box"><div class="stat-value">${Math.round(countCompleted(currentMonth)/countTotal(currentMonth)*100)}%</div><div class="stat-label">Прогресс месяца</div></div></div>`;
+    
+    html+=`<h2>📈 Динамика развития по месяцам</h2><table><tr><th>Месяц</th><th>Этап развития</th><th>Выполнено</th><th>Всего</th><th>Прогресс</th></tr>`;
+    for(let m=1;m<=6;m++){
+        const d=healthData[m];
+        const mc=countCompleted(m),mt=countTotal(m),mpct=mt>0?Math.round(mc/mt*100):0;
+        html+=`<tr><td>${m}м</td><td>${d.subtitle}</td><td>${mc}</td><td>${mt}</td><td><div class="progress"><div class="progress-fill" style="width:${mpct}%"></div></div>${mpct}%</td></tr>`;
+    }
+    html+=`</table>`;
+    
+    html+=`<h2>✅ Выполненные задачи</h2>`;
+    for(let m=1;m<=6;m++){
+        const d=healthData[m];
+        const hasItems=Object.values(d.categories).some(cat=>cat.items.some(i=>completedItems[i.id]));
+        if(hasItems){
+            html+=`<h3>${d.title}: ${d.subtitle}</h3><div class="checklist">`;
+            for(const [k,cat] of Object.entries(d.categories)){
+                const done=cat.items.filter(i=>completedItems[i.id]);
+                if(done.length>0){
+                    html+=`<div><strong>${cat.icon} ${cat.title}</strong>`;
+                    for(const item of done)html+=`<div class="check">${item.text}</div>`;
+                    html+=`</div>`;
+                }
+            }
+            html+=`</div>`;
+        }
+    }
+    
+    html+=`</body></html>`;
+    
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`report-${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function shareReport(){
+    let text=`📊 Дорожная карта здоровья ребёнка 💩\n`;
+    if(birthDate)text+=`ДР: ${birthDate}\n`;
+    text+=`Дата: ${new Date().toLocaleDateString('ru-RU')}\n\n`;
+    text+=`ОБЩИЙ ПРОГРЕСС: ${calculateProgress()}%\n\n`;
+    for(let m=1;m<=6;m++){
+        const d=healthData[m];
+        const mc=countCompleted(m),mt=countTotal(m),mpct=mt>0?Math.round(mc/mt*100):0;
+        text+=`${d.title} (${d.subtitle}): ${mc}/${mt} (${mpct}%)\n`;
+    }
+    const shareData={title:'Здоровье ребёнка',text};
+    if(navigator.share){
+        navigator.share(shareData).catch(()=>{copyToClipboard(text);});
+    }else{
+        copyToClipboard(text);
+    }
+}
+
+function copyToClipboard(text){const textarea=document.createElement('textarea');textarea.value=text;document.body.appendChild(textarea);textarea.select();document.execCommand('copy');document.body.removeChild(textarea);}
+
+function calculateProgress(){let t=0,c=0;for(let m=1;m<=6;m++)for(const cat of Object.values(healthData[m].categories))for(const item of cat.items){t++;if(completedItems[item.id])c++;}return t>0?Math.round(c/t*100):0;}
+
+function exportAsICS(){
+    if(!birthDate){alert('Укажите дату');return;}
+    const birth=new Date(birthDate),ts=new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+    let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Child Health//RU\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:Дорожная карта здоровья\r\n';
+    for(let m=1;m<=6;m++){
+        const d=healthData[m],evDate=new Date(birth);
+        evDate.setMonth(evDate.getMonth()+m-1);
+        const dateOnly=evDate.toISOString().split('T')[0].replace(/-/g,'');
+        ics+=`BEGIN:VEVENT\r\nUID:${genUID()}@child\r\nDTSTAMP:${ts}\r\nDTSTART;VALUE=DATE:${dateOnly}\r\nSUMMARY:${m}м: ${d.subtitle}\r\nEND:VEVENT\r\n`;
+    }
+    ics+='END:VCALENDAR';
+    const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='roadmap.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function genUID(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)});}
+
+function resetProgress(){if(confirm('Сбросить все данные?')){completedItems={};safeSet('completedItems','{}');renderMonthTabs();renderContent();updateProgress();hideSettings();}}
+
+function resetBirthDate(){birthDate='';safeSet('birthDate','');document.getElementById('birthDate').value='';document.getElementById('currentAge').textContent='';hideSettings();}
+
+document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target===this)hideSettings();});
+
+document.addEventListener('DOMContentLoaded',init);
+if(document.readyState!=='loading')init();
+    </script>
+</body>
+</html>
